@@ -1,21 +1,16 @@
 import socket
-import sys
 
 HOST, PORT = "localhost", 8005
-data = " ".join(sys.argv[1:])
 
 # Create a socket (SOCK_STREAM means a TCP socket)
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+sock.connect((HOST, PORT))
 
-try:
-	# Connect to server and send data
-	sock.connect((HOST, PORT))
-	sock.sendall(data + "\n")
+data = "temp"
+while(data != "exit"):
+	message = raw_input("Enter message: ")
+	sock.sendall(message)
+	response = sock.recv(1024)
+	print "Received: {}".format(response)
 
-	# Receive data from the server and shut down
-	received = sock.recv(1024)
-finally:
-	sock.close()
-
-print "Sent:     {}".format(data)
-print "Received: {}".format(received)
+sock.close()
