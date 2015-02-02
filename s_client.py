@@ -48,11 +48,11 @@ class EchoClientFactory(ClientFactory):
 		reactor.stop()
 
 def main():
-	host = "localhost"
 	port = 8005
+	host = raw_input("Server IP: ")
 	clientAmt = int(raw_input("How many clients?: "))
 	message = raw_input("Message to repeat: ")
-	
+
 	factory = EchoClientFactory(message)
 
 	for i in range(clientAmt):
