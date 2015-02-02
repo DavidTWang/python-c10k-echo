@@ -6,9 +6,10 @@ class ThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
 	def handle(self):
 		current_thread = threading.current_thread().name
 		ip = self.client_address[0]
+		port = self.client_address[1]
 		data = "temp"
 
-		print "New Connection from: {} on thread {}".format(ip, current_thread)
+		print "New Connection from: {}:{} on thread {}".format(ip, port, current_thread)
 
 		while len(data):
 			data = self.request.recv(1024)

@@ -6,8 +6,8 @@ HOST, PORT = "localhost", 8005
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 sock.connect((HOST, PORT))
 
-data = "temp"
-while(data != "exit"):
+message = "temp"
+while(message != "exit"):
 	message = raw_input("Enter message: ")
 	sock.sendall(message)
 	response = sock.recv(1024)
