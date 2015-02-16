@@ -1,5 +1,6 @@
 import threading
 import SocketServer
+import socket
 
 
 class ThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
@@ -23,10 +24,12 @@ class ThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
 
 if __name__ == '__main__':
 	HOST = "localhost"
-	PORT = 8005
+	temp = socket.getfqdn()
+	port = int(raw_input("Enter port: "))
 
 	SocketServer.ThreadingTCPServer.allow_reuse_address = True
-	server = SocketServer.ThreadingTCPServer((HOST, PORT), ThreadedTCPRequestHandler)
+	server = SocketServer.ThreadingTCPServer((HOST, port), ThreadedTCPRequestHandler)
+	print temp
 	print "Server started..."
 	server.serve_forever()
 	print "Server loop running in thread: ", threading.current_thread()
