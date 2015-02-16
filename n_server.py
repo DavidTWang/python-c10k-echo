@@ -5,10 +5,10 @@ PORT = 8005
 BUFFER_SIZE = 256
 CONNECTIONS = 5
 
-def echo(connection, address):
+def echo(connection, address, clientID):
 	data = connection.recv(BUFFER_SIZE)
 	if(data != ""):
-		print "Received: %s from %s" % (data, address)
+		print "[%s]Received: %s from %s" % (clientID, data, address)
 		connection.sendall(data)
 	# connection.close()
 
@@ -46,10 +46,11 @@ def epoll_handling(server):
 	# Read-only flags for connections
 	conn_flags = (select.EPOLLIN | select.EPOLLET | select.EPOLLERR | select.EPOLLHUP)
 	max_concurrent_clients = 0
-
 	epoll = select.epoll()
 	# Register read & edge-trigger descriptor
 	epoll.register(server, select.EPOLLIN | select.EPOLLET)
+
+	client_id = 0
 
 	try:
 		while(1):
@@ -63,20 +64,23 @@ def epoll_handling(server):
 						try:
 							conn, address = server.accept()
 							conn.setblocking(0)
-							client_socks[conn.fileno()] = conn
+							client_id += 1
+							client_socks[conn.fileno()] = [conn, client_id]
 							epoll.register(conn, conn_flags)
 						except:
 							break
 				# Handling inputs from clients
 				elif(flag & select.EPOLLIN):
 					# epoll.unregister(fd)
-					echo(client_socks[fd], client_socks[fd].getpeername())
+					echo(client_socks[fd][0], client_socks[fd][0].getpeername(), client_socks[fd][1])
 
 				# Handling errors or holdups
 				elif(flag & select.EPOLLERR or flag & select.EPOLLHUP):
 					epoll.unregister(fd)
-					client_socks[fd].close
+					client_socks[fd][0].close
 	finally:
+		for fd, flag in events:
+			epoll.unregister(fd)
 		print "\nMax concurrent clients: {}".format(max_concurrent_clients)
 
 

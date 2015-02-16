@@ -2,7 +2,7 @@ import select, socket, sys, time, signal, threading, timeit
 from random import uniform
 from multiprocessing.dummy import Pool
 
-HOST = "127.0.0.1"
+HOST = "localhost"
 PORT = 8005
 BUFFER_SIZE = 256
 
