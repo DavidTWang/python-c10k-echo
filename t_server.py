@@ -17,7 +17,7 @@ class ThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
 			if(data != ""):
 				print "{} sent: {}".format(current_thread, data)
 			self.request.sendall(data)
-		print "{} disconnected".format(current_thread)
+		# print "{} disconnected".format(current_thread)
 
 # class ThreadedTCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
 # 	pass
