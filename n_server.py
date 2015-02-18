@@ -2,7 +2,7 @@ import select, socket, sys
 
 HOST = "localhost"
 PORT = 8005
-BUFFER_SIZE = 256
+BUFFER_SIZE = 1024
 CONNECTIONS = 5
 
 def echo(connection, address, clientID):
@@ -41,14 +41,21 @@ def select_handling(server):
 			sockets.close()
 		print "\nMax concurrent clients: {}".format(max_concurrent_clients)
 
-def epoll_handling(server):
+def epoll_handling(server, trigger):
 	client_socks = {}
-	# Read-only flags for connections
-	conn_flags = (select.EPOLLIN | select.EPOLLET | select.EPOLLERR | select.EPOLLHUP)
 	max_concurrent_clients = 0
 	epoll = select.epoll()
-	# Register read & edge-trigger descriptor
-	epoll.register(server, select.EPOLLIN | select.EPOLLET)
+
+	if(trigger == "edge"):
+		# Register read & edge-trigger descriptor
+		epoll.register(server.fileno(), select.EPOLLIN | select.EPOLLET)
+		# Read-only flags for connections
+		conn_flags = (select.EPOLLIN | select.EPOLLET | select.EPOLLERR | select.EPOLLHUP)
+	else:
+		# Register read descriptor
+		epoll.register(server.fileno(), select.EPOLLIN)
+		# Read-only flags for connections
+		conn_flags = (select.EPOLLIN | select.EPOLLERR | select.EPOLLHUP)
 
 	client_id = 0
 
@@ -57,7 +64,6 @@ def epoll_handling(server):
 			max_concurrent_clients = max(max_concurrent_clients, len(client_socks))
 			events = epoll.poll()
 			for fd, flag in events:
-
 				# "Readable" server socket ready to accept a client
 				if(fd == server.fileno()):
 					while(1):
@@ -67,7 +73,7 @@ def epoll_handling(server):
 							client_id += 1
 							client_socks[conn.fileno()] = [conn, client_id]
 							epoll.register(conn, conn_flags)
-						except:
+						except: # socket.error
 							break
 				# Handling inputs from clients
 				elif(flag & select.EPOLLIN):
@@ -79,8 +85,7 @@ def epoll_handling(server):
 					epoll.unregister(fd)
 					client_socks[fd][0].close
 	finally:
-		for fd, flag in events:
-			epoll.unregister(fd)
+		epoll.unregister(server)
 		print "\nMax concurrent clients: {}".format(max_concurrent_clients)
 
 

@@ -4,7 +4,7 @@ from multiprocessing.dummy import Pool
 
 HOST = "localhost"
 PORT = 8005
-BUFFER_SIZE = 256
+BUFFER_SIZE = 1024
 
 def echo_client(clientID, message, repeat):
 	client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
