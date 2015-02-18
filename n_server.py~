@@ -39,7 +39,7 @@ def select_handling(server):
 				# Echo data from a queued client
 				else:
 					# clients.remove(sockets)
-					echo(sockets, sockets.getpeername(), clientID)
+					echo(sockets, sockets.getpeername())
 	finally:
 		for sockets in readList:
 			sockets.close()
