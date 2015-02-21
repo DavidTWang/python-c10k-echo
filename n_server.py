@@ -2,7 +2,7 @@ import select, socket, sys, logging
 
 HOST = "localhost"
 PORT = 8005
-BUFFER_SIZE = 1024
+BUFFER_SIZE = 2048
 CONNECTIONS = 5
 logging.basicConfig(filename='server.log', filemode='w', format='[%(asctime)s] %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p', level=logging.DEBUG)
 dataSent = {}
@@ -15,8 +15,8 @@ def echo(connection, address, clientID):
 
 	data = connection.recv(BUFFER_SIZE).rstrip('/n')
 	if(data != ""):
+		print "[%s]Received: %s from %s" % (clientID, data, address)
 		dataRecv[address[0]] += len(data)
-		# print "[%s]Received: %s from %s" % (clientID, data, address)
 		connection.sendall(data)
 		dataSent[address[0]] += len(data)
 	# connection.close()
@@ -66,7 +66,7 @@ def epoll_handling(server, trigger):
 		epoll.register(server.fileno(), select.EPOLLIN | select.EPOLLET)
 		# Read-only flags for connections
 		conn_flags = (select.EPOLLIN | select.EPOLLET | select.EPOLLERR | select.EPOLLHUP)
-	else:
+	elif(trigger == "level"):
 		# Register read descriptor
 		epoll.register(server.fileno(), select.EPOLLIN)
 		# Read-only flags for connections
@@ -86,9 +86,11 @@ def epoll_handling(server, trigger):
 							conn, address = server.accept()
 							conn.setblocking(0)
 							epoll.register(conn, conn_flags)
-
 							client_id += 1
 							client_socks[conn.fileno()] = [conn, client_id]
+							if(dataSent[address[0]] is None):
+								pass
+						except KeyError:
 							dataSent[address[0]] = 0
 							dataRecv[address[0]] = 0
 						except: # socket.error
@@ -103,7 +105,7 @@ def epoll_handling(server, trigger):
 					epoll.unregister(fd)
 					client_socks[fd][0].close
 	except:
-		print "Error: ", sys.exc_info()[0]
+		print "Error: ", sys.exc_info()
 	finally:
 		epoll.unregister(server)
 		print "\nMax concurrent clients: {}".format(max_concurrent_clients)
